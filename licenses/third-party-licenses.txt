@@ -1,0 +1,11 @@
+Next.js
+MIT License
+https://github.com/vercel/next.js
+
+React
+MIT License
+https://github.com/facebook/react
+
+caniuse-lite
+CC BY 4.0
+https://github.com/browserslist/caniuse-lite
