@@ -1,0 +1,672 @@
+:root {
+  /* 背景色（B案：セージミスト）。
+     黄みを抑え、アクセントカラー（深緑）と同じ方向にわずかに寄せた
+     落ち着いた色。長時間の読み書きで疲れにくくすることを優先している。 */
+  --bg: #eef1ec;
+  --ink: #1f2421;
+  --sub: #6b7280;
+  /* カード・入力欄などの枠線色。
+     旧値(#dbe2dc)は背景(--bg)とのコントラストが約1.16:1しかなく、
+     境界として機能していなかったため、背景と同じ緑がかった色調のまま
+     濃さだけを上げてある（白カードとのコントラスト比 約2.0:1、
+     背景とのコントラスト比 約1.77:1）。黒に近い強い枠には戻していない。 */
+  --line: #b1b8b4;
+  --accent: #3d5a4c;
+  --accent-soft: #e8efe9;
+  --card: #ffffff;
+
+  /* 視認性強化用（薄い背景色の上でも重要情報を読みやすくするため） */
+  --ink-strong: #101210; /* タイトルなど、最も目立たせたい情報 */
+  --ink-body: #262b25; /* メモ本文など、長時間読んでも疲れにくい濃さ */
+  --sub-strong: #454f49; /* 説明文・ラベルなど、--subより読みやすくした補助テキスト */
+
+  /* 入力フォーム専用の枠線色。背景（セージミスト）と同じ緑がかった色調で
+     揃えることで、フレームが背景から自然に生まれた影のように馴染み、
+     色ムラに見えないようにしている。
+     --line（カード等の枠線、白背景とのコントラスト比 約2.0:1）と
+     同水準まで引き上げ、「入力欄だと確実に認識できる」強さにしてある。
+     入力中（フォーカス時）はさらに少し濃くする（約2.95:1）。
+     ブラウザ標準のフォーカス枠は使わず、この2段階だけを滑らかに変化させる。 */
+  --input-border: rgba(38, 58, 48, 0.36);
+  --input-border-focus: rgba(38, 58, 48, 0.52);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ヘッダー：左=商品名／中央=検索窓／右=操作メニュー の3カラム。
+   幅の異なる左右コンテンツがあっても検索窓が確実に中央に来るよう、
+   space-betweenではなくgrid（1fr auto 1fr）を使う。 */
+.app-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  grid-template-areas: "logo search nav";
+  align-items: center;
+  gap: 16px;
+  padding: 16px 32px;
+  border-bottom: 1px solid var(--line);
+  background: var(--card);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.logo {
+  grid-area: logo;
+  justify-self: start;
+  font-weight: 700;
+  font-size: 18px;
+  white-space: nowrap;
+}
+.logo span {
+  color: var(--accent);
+  font-weight: 400;
+}
+
+.app-header nav {
+  grid-area: nav;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+/* 「一覧」「探す」の通常リンク。色は変えず、太さだけ上げて見落とされにくくする。
+   「＋ メモを書く」（.btn-primary-small、背景色で目立つ）はここでは対象外にし、
+   新規作成ボタンより控えめな存在感を保つ。 */
+.app-header nav a:not(.btn-primary-small) {
+  font-weight: 600;
+}
+
+/* どの画面でも使える常時検索窓（ヘッダー中央） */
+.header-search {
+  grid-area: search;
+  justify-self: center;
+  width: 100%;
+  max-width: 320px;
+}
+.header-search input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13px;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+/* スマホ幅では、1行目に ロゴ/ナビ、2行目に検索窓 を自然に折り返す */
+@media (max-width: 640px) {
+  .app-header {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "logo nav"
+      "search search";
+    row-gap: 10px;
+    padding: 12px 16px;
+  }
+  .header-search {
+    max-width: none;
+  }
+  .app-header nav {
+    gap: 12px;
+    font-size: 13px;
+  }
+}
+
+/* 360px前後の小さいスマホ幅では、ロゴ＋ナビが1行に収まりきらず
+   横スクロールが発生していたため、さらに詰める（表示崩れの修正のみ） */
+@media (max-width: 400px) {
+  .app-header {
+    gap: 10px;
+    padding: 12px 12px;
+  }
+  .logo {
+    font-size: 16px;
+  }
+  .app-header nav {
+    gap: 8px;
+    font-size: 12px;
+  }
+  .btn-primary-small {
+    padding: 8px 10px;
+  }
+}
+
+.btn-primary-small {
+  background: var(--accent);
+  color: #fff !important;
+  padding: 8px 16px;
+  border-radius: 6px;
+}
+
+/* 一覧画面上部の目立つ「＋ メモを書く」導線。初めて使う人が迷わないように大きめにする */
+.btn-create {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff !important;
+  padding: 14px 22px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+.btn-create:hover {
+  opacity: 0.92;
+}
+
+.app-main {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
+}
+
+h1 {
+  font-size: 22px;
+  margin-bottom: 4px;
+  color: var(--ink-strong);
+  font-weight: 700;
+}
+
+.subtitle {
+  color: var(--sub-strong);
+  font-size: 14px;
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+/* --- フォーム --- */
+.form-group {
+  margin-bottom: 18px;
+}
+.form-group label {
+  display: block;
+  font-size: 13px;
+  color: var(--sub-strong);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink-body);
+  font-family: inherit;
+  background: var(--card);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: var(--input-border-focus);
+}
+.form-group textarea {
+  min-height: 180px;
+  resize: vertical;
+}
+
+.btn-submit {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+}
+.btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --- 検索・並び替え --- */
+.list-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+/* データ管理（バックアップ・復元）操作をまとめる行 */
+.data-tools {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+/* バックアップ・復元ボタン（データ管理用の副次操作なので控えめなスタイルにする） */
+.btn-backup {
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  padding: 0 14px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-backup:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.backup-message {
+  font-size: 13px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 0 0 20px;
+  white-space: pre-line;
+  line-height: 1.7;
+}
+
+.restore-error {
+  font-size: 13px;
+  color: #b3452e;
+  background: #fbeee9;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 0 0 20px;
+}
+
+/* バックアップ実行前・復元実行前の確認パネル（説明を読んでから実行してもらうため） */
+.backup-confirm {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin: 0 0 20px;
+}
+.backup-confirm-text {
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.7;
+  margin-bottom: 14px;
+}
+.backup-confirm-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn-backup-confirm {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.btn-backup-confirm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.search-box {
+  flex: 1;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--card);
+}
+.sort-select {
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13px;
+  background: var(--card);
+  color: var(--ink);
+}
+
+/* --- 一覧カード --- */
+.note-card {
+  display: block;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  transition: box-shadow 0.15s ease;
+}
+.note-card:hover {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.note-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.note-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink-strong);
+}
+
+.note-date {
+  font-size: 12px;
+  color: var(--sub);
+}
+
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  margin-right: 6px;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f1f0ec;
+  color: var(--sub);
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+
+.tag-user {
+  background: #fbeee2;
+  color: #6a3d14; /* デザイン（背景・形）は維持し、文字色のみ濃くして視認性を上げる */
+  font-weight: 500;
+}
+
+/* タグをボタンとして使う場合（クリックで絞り込み・追加） */
+.tag-chip-button {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.tag-history {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.note-card-badges {
+  margin-bottom: 6px;
+}
+.note-card-tags {
+  margin-top: 2px;
+}
+
+/* 一覧カードの削除操作（誤操作を避けるため確認を挟む） */
+.note-card-actions {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.note-card-delete-btn {
+  background: none;
+  border: none;
+  color: #b3452e;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 10px;
+  margin: -6px -10px;
+}
+.note-card-delete-confirm {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.note-card-delete-confirm-text {
+  font-size: 12px;
+  color: #b3452e;
+}
+.note-card-delete-confirm .btn-delete-confirm,
+.note-card-delete-confirm .btn-cancel {
+  padding: 6px 14px;
+  font-size: 13px;
+}
+
+/* v0.2: 未来価値バッジ（一覧カード用） */
+.badge-fv {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  margin-right: 6px;
+  border: 1px solid var(--line);
+  color: var(--sub);
+}
+.fv-高 {
+  background: #eef7ef;
+  color: #2f7a3d;
+  border-color: #cfe8d3;
+}
+.fv-中 {
+  background: #fdf6e3;
+  color: #9a7b12;
+  border-color: #f0e2ad;
+}
+.fv-低 {
+  background: #f4f2ee;
+  color: var(--sub);
+}
+.fv-未評価 {
+  background: #fff;
+  color: var(--sub);
+  border-style: dashed;
+}
+
+.field-hint {
+  font-size: 12px;
+  color: var(--sub-strong);
+  font-weight: 500;
+}
+
+/* v0.2: 詳細画面の未来価値セレクタ（ボタン形式） */
+.future-value-selector {
+  display: flex;
+  gap: 8px;
+}
+.fv-option {
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--ink);
+}
+.fv-option.fv-selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.fv-option:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* v0.2: ユーザータグの削除ボタン */
+.tag-removable {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.tag-remove-btn {
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  padding: 0;
+}
+
+/* 詳細画面のタグ：クリックすると検索画面へ（削除ボタンとは別） */
+.tag-link-button {
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  padding: 0;
+}
+
+/* v0.2: ユーザータグ追加フォーム */
+.tag-add-form {
+  display: flex;
+  gap: 8px;
+}
+.tag-add-form input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-body);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.tag-add-form input:focus {
+  border-color: var(--input-border-focus);
+}
+.btn-submit-small {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--sub);
+  padding: 60px 0;
+  font-size: 14px;
+}
+
+/* --- 詳細画面 --- */
+.detail-section {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.detail-section h2 {
+  font-size: 13px;
+  color: var(--sub);
+  margin: 0 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.detail-body {
+  white-space: pre-wrap;
+  font-size: 15px;
+  color: var(--ink-body);
+  line-height: 1.8;
+  font-weight: 500;
+}
+.back-link {
+  display: inline-block;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--sub);
+}
+
+/* メモ削除：誤操作を避けるため、他の操作から視覚的に区別する */
+.detail-section-danger {
+  border-color: #f0d9d2;
+}
+.btn-delete {
+  background: #fff;
+  border: 1px solid #dba694;
+  color: #b3452e;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.delete-confirm-text {
+  font-size: 14px;
+  color: #b3452e;
+  margin-bottom: 14px;
+  line-height: 1.7;
+}
+.delete-confirm-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn-delete-confirm {
+  background: #b3452e;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.btn-delete-confirm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.btn-cancel {
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 初回利用案内（オンボーディング）：既存の.backup-confirmカードの
+   見た目をそのまま流用し、画面全体を覆うオーバーレイの位置指定だけを追加する */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(31, 36, 33, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+.onboarding-card {
+  max-width: 420px;
+  width: 100%;
+  margin: 0;
+}

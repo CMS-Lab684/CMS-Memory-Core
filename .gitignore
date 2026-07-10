@@ -1,0 +1,30 @@
+# dependencies
+/node_modules
+
+# Next.js
+/.next/
+/out/
+tsconfig.tsbuildinfo
+
+# 環境変数（秘密情報が入る可能性があるため常に除外）
+.env
+.env*.local
+
+# 個人データ（旧SQLite。実際のメモが入っているため公開リポジトリに含めない）
+cms.db
+
+# 個人データ（バックアップ機能の出力・過去の移行作業で生成された実データファイル）
+*_backup*.json
+*backup*.json
+*migrated-notes.json
+*migration-backup.json
+
+# OS/エディタ
+.DS_Store
+*.log
+
+# Claude Code
+.claude/
+
+# 開発用Word資料
+*.docx
